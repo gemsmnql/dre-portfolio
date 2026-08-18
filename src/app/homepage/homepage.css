@@ -1,0 +1,205 @@
+.caption {
+font-family: "Helvetica Reg";
+color: var(--primary-color);
+
+}
+
+.andre {
+    color: var(--primary-color);
+    font-family: Trajan;
+}
+
+.about {
+    background-color: var(--primary-color);
+}
+
+.about-container h2{
+    color: var(--base-color);
+    font-family: Aston;
+}
+
+.about-container p{
+    color: var(--base-color);
+    font-family: "Helvetica Light";
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease-out, transform 0.6s ease-out;
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Works Part*/
+/* Works Part */
+.works {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background-color: var(--base-color);
+  overflow: hidden;
+}
+
+.works-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.works-viewport.panning {
+  cursor: grabbing;
+}
+
+.works-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1400px;   /* must match canvasWidth in .ts */
+  height: 900px;  /* must match canvasHeight in .ts */
+  will-change: transform;
+}
+
+.works-title {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  margin: 0;
+  font-family: 'Georgia', serif;
+  font-size: 2.75rem;
+  font-weight: 600;
+  color: #1a2a5e;
+  pointer-events: none;
+  user-select: none;
+}
+
+.work-item {
+  position: absolute;
+  margin: 0;
+  user-select: none;
+  pointer-events: auto; /* was none — needs to receive click/hover */
+  font-size: 0.85rem;
+}
+
+.work-item.reveal {
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.work-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1px;
+}
+
+.work-item figcaption {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 2px 0;
+  color: black;
+  font-family: 'Helvetica Light', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+
+.work-item:hover figcaption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.work-item figcaption .idx {
+  color: var(--primary-color);
+  transition: opacity 0.25s ease;
+}
+
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+  animation: preview-fade 0.2s ease;
+}
+
+@keyframes preview-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.preview-figure {
+  position: relative;
+  max-width: 85vw;
+  max-height: 85vh;
+  margin: 0;
+  cursor: default;
+}
+
+.preview-figure img {
+  display: block;
+  max-width: 85vw;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  border-radius: 2px;
+}
+
+.preview-figure figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: #fff;
+  font-family: 'Helvetica Light', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.preview-figure figcaption .idx {
+  color: #aaa;
+}
+
+.preview-close {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 60;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+}
+
+/*Cotanct*/
+.contact-container h2 {
+  font-family: Aston;
+  color: #fff;
+}
+
+.contact-container p {
+  font-family: "Helvetica Light";
+  color: #fff;
+}
+

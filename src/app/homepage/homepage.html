@@ -1,0 +1,181 @@
+<section class="hero min-h-screen w-full overflow-hidden" id="home" #heroSection>
+  <div class="flex items-start justify-end gap-4 p-[15px] relative">
+
+    <img
+      src="/assets/images/1.jpg"
+      alt="Man driving a tricycle"
+      class="reveal h-[311px] w-[355px] object-cover"
+      [class.reveal-in]="heroVisible()"
+      style="transition-delay: 0ms" />
+
+    <img
+      src="/assets/images/10.jpg"
+      alt="Man playing guitar on the street"
+      class="reveal h-[394px] w-[513px] object-cover"
+      [class.reveal-in]="heroVisible()"
+      style="transition-delay: 150ms" />
+
+    <div class="h-[516px] w-[355px]"></div>
+
+    <div
+      class="reveal px-8 absolute left-0 bottom-15 w-56 md:w-3xl"
+      [class.reveal-in]="heroVisible()"
+      style="transition-delay: 300ms">
+      <p class="caption text-base leading-relaxed [text-align:justify] [text-align-last:justify] [text-justify:inter-word]">
+        Photography portfolio by Jhun<br>
+        Andre Mananquil, a Pampanga-based<br>
+        photographer capturing the streets<br>
+        and daily lives of Filipinos.
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="reveal select-none mt-5"
+    [class.reveal-in]="heroVisible()"
+    style="transition-delay: 450ms">
+    <h1 class="andre leading-[1.1] tracking-[-15%] text-[22vw] md:text-[30.25vw]">ANDRE</h1>
+  </div>
+</section>
+
+<section class="about min-h-screen w-full relative overflow-hidden px-10 py-16" id="about" #aboutSection>
+  <div class="about-container relative max-w-8xl mx-auto h-full">
+
+    <h2
+      class="reveal font-script text-white text-6xl md:text-9xl absolute top-0 left-40 leading-none select-none z-100"
+      [class.reveal-in]="aboutVisible()"
+      style="transition-delay: 0ms">
+      Andre
+    </h2>
+
+    <p
+      class="reveal text-white text-base leading-relaxed absolute top-24 right-50 w-56 md:w-90 [text-align:justify] [text-align-last:justify] [text-justify:inter-word]"
+      [class.reveal-in]="aboutVisible()"
+      style="transition-delay: 150ms">
+      framing of honest <br>
+      from everyday glimpses <br>
+      bustling quiet culture <br>
+      unfold avenues mornings <br>
+      in plain to sight
+    </p>
+
+    <div
+      class="reveal w-72 md:w-[614px] md:h-[614px] h-auto mx-auto mt-28 md:mt-32 block"
+      [class.reveal-in]="aboutVisible()"
+      style="transition-delay: 300ms"
+      #aboutImageSlot></div>
+
+    <p
+      class="reveal text-white text-base leading-relaxed absolute bottom-24 left-50 w-56 md:w-90 [text-align:justify] [text-align-last:justify] [text-justify:inter-word]"
+      [class.reveal-in]="aboutVisible()"
+      style="transition-delay: 450ms">
+      a visual archive by<br>
+      jhun andre mananquil<br>
+      documenting the raw<br>
+      pulse of pampanga life<br>
+      and across the philippines
+    </p>
+
+    <h2
+      class="reveal font-script text-white text-6xl md:text-9xl absolute bottom-0 right-10 leading-none select-none z-100"
+      [class.reveal-in]="aboutVisible()"
+      style="transition-delay: 600ms">
+      Mananquil
+    </h2>
+
+  </div>
+</section>
+
+<img
+  #travelImg
+  src="/assets/images/pic.jpeg"
+  alt="Portrait of Jhun Andre Mananquil"
+  class="fixed object-cover z-50 pointer-events-none"
+  [style.top.px]="imgStyle().top"
+  [style.left.px]="imgStyle().left"
+  [style.width.px]="imgStyle().width"
+  [style.height.px]="imgStyle().height"
+/>
+
+
+<section class="works" id="works" #worksSection>
+  <div
+    class="works-viewport"
+    #worksViewport
+    [class.panning]="isPanning()"
+    (pointerdown)="onPanStart($event)"
+  >
+
+    @for (offset of loopOffsets; track offset) {
+      <div
+        class="works-canvas mt-20"
+        [style.transform]="'translate(' + (panX() + offset * 1400) + 'px, ' + panY() + 'px)'"
+      >
+        @for (item of items; track item.id; let i = $index) {
+          <figure
+            class="work-item reveal"
+            [class.reveal-in]="worksVisible()"
+            [style.transition-delay.ms]="i * 80"
+            [attr.data-item-id]="item.id"
+            [style.top.px]="item.top"
+            [style.left.px]="item.left"
+            [style.width.px]="item.width"
+          >
+            <img [src]="item.src" [alt]="item.caption" draggable="false" />
+            @if (item.caption) {
+              <figcaption>
+                <span>{{ item.caption }}</span>
+                <span class="idx">({{ item.tag }})</span>
+              </figcaption>
+            }
+          </figure>
+        }
+      </div>
+    }
+  </div>
+
+  @if (selectedItem(); as sel) {
+  <div class="preview-overlay" (click)="closePreview()">
+    <button
+      type="button"
+      class="preview-close"
+      (click)="onCloseClick($event)"
+      aria-label="Close preview">
+      &times;
+    </button>
+    <figure class="preview-figure" (click)="$event.stopPropagation()">
+      <img [src]="sel.src" [alt]="sel.caption" />
+      @if (sel.caption) {
+        <figcaption>
+          <span>{{ sel.caption }}</span>
+          <span class="idx">{{ sel.tag }}</span>
+        </figcaption>
+      }
+    </figure>
+  </div>
+}
+</section>
+
+<section class="contact relative min-h-screen w-full overflow-hidden" id="contact" #contactSection>
+  <img
+    src="/assets/images/5.jpg"
+    alt="Fisherman on a boat with nets"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+
+  <div class="contact-container reveal relative z-10 max-w-xl ml-auto mr-16 md:mr-24 pt-16 md:pt-20"
+       [class.reveal-in]="contactVisible()">
+
+    <h2 class="font-script text-white text-6xl md:text-8xl leading-none select-none mb-4">
+      Contact
+    </h2>
+
+    <p class="text-white text-sm leading-relaxed [text-align:justify] [text-align-last:justify] [text-justify:inter-word]">
+      a visual archive by<br>
+      jhun andre mananquil documenting<br>
+      raw pulse of pampanga and the<br>
+      across the street philippines life
+    </p>
+
+  </div>
+</section>

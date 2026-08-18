@@ -1,0 +1,31 @@
+<div class="nav-bar fixed top-0 w-full z-[100]">
+    <nav class="nav-container justify-between items-center flex m-[24px] z-10 relative">
+        
+        <div class="flex flex-col gap-2 items-start">
+            <img 
+                src="assets/images/logo/logo.png" 
+                alt="logo" 
+                class="logo-icon w-[50px] h-auto cursor-pointer select-none transition-transform duration-500 ease-out"
+                [class.rotate-180]="isMenuOpen()"
+                (click)="toggleMenu()">
+
+            @if (isMenuOpen()) {
+                <ul class="flex flex-col mt-5 gap-5 text-2xl font-medium text-center">
+                    @for (link of navLinks; track link.href; let i = $index) {
+                        <li
+                            class="nav-item opacity-0 translate-y-3"
+                            [style.animation-delay.ms]="i * 80">
+                            <a
+                                [href]="link.href"
+                                (click)="isMenuOpen.set(false)"
+                                class="hover:underline">
+                                {{ link.label }}
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+    </nav>
+</div>

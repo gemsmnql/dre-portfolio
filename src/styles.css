@@ -1,3 +1,61 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+@font-face {
+    font-family: "Excalibur Reg";
+    src: url(/assets/fonts/ExcaliburEF-Regular.otf);
+}
+
+@font-face {
+    font-family: "Excalibur Med";
+    src: url(/assets/fonts/ExcaliburEF.otf);
+}
+
+@font-face {
+    font-family: "Helvetica Neue";
+    src: url(/assets/fonts/HelveticaNeueMedium.otf);
+}
+
+@font-face {
+    font-family: "Helvetica Reg";
+    src: url(/assets/fonts/HelveticaNeueRoman.otf);
+}
+
+@font-face {
+    font-family: "Trajan";
+    src: url(/assets/fonts/TrajanPro-Regular.ttf);
+}
+
+@font-face {
+    font-family: "Aston";
+    src: url(/assets/fonts/Aston_Script.ttf);
+}
+
+@font-face {
+    font-family: "Helvetica Light";
+    src: url(/assets/fonts/HelveticaNeueLight.otf);
+}
+
+:root {
+    --primary-color: #363764;
+    --base-color: #F4F5E8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,body {
+    width:100%;
+    overflow-x:hidden;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-y: hidden;
+    background-color: var(--base-color);
+}

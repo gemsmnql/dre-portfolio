@@ -1,0 +1,19 @@
+ul {
+    font-family: "Excalibur Reg";
+    color: var(--primary-color)
+}
+
+.nav-item {
+  animation: navItemIn 0.4s ease-out forwards;
+}
+
+@keyframes navItemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
