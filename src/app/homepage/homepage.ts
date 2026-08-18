@@ -1,4 +1,5 @@
-import { Component, ElementRef, HostListener, signal, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, HostListener, signal, ViewChild, AfterViewInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 interface ImgRect { top: number; left: number; width: number; height: number; }
 
@@ -38,8 +39,8 @@ export class Homepage implements AfterViewInit, OnDestroy {
   private heroObserver?: IntersectionObserver;
   private aboutObserver?: IntersectionObserver;
   private worksObserver?: IntersectionObserver;
+  private resizeHandler?: () => void;
 
-  // ---------- Works gallery: scattered layout, matches reference image ----------
   items: WorkItem[] = [
     { id: 1,  src: 'assets/images/1.jpg', caption: 'Lorem Ipsum', tag: '01', top: 60,   left: 60,   width: 280 },
     { id: 2,  src: 'assets/images/2.jpg', caption: 'Lorem Ipsum', tag: '02', top: 380,  left: 20,   width: 160 },
@@ -54,21 +55,18 @@ export class Homepage implements AfterViewInit, OnDestroy {
     { id: 11, src: 'assets/images/11.jpg', caption: 'Lorem Ipsum', tag: '11', top: 480,  left: 1180, width: 180 },
   ];
 
-  // three copies of the canvas side by side so panning horizontally looks infinite
   readonly loopOffsets = [-1, 0, 1];
 
   panX = signal<number>(0);
   panY = signal<number>(0);
   isPanning = signal<boolean>(false);
 
-  // preview state
   selectedItem = signal<WorkItem | null>(null);
 
   private panStart = { x: 0, y: 0 };
   private panOriginX = 0;
   private panOriginY = 0;
 
-  // momentum tracking
   private lastMoveTime = 0;
   private lastMoveX = 0;
   private lastMoveY = 0;
@@ -76,63 +74,89 @@ export class Homepage implements AfterViewInit, OnDestroy {
   private velocityY = 0;
   private momentumFrame: number | null = null;
 
-  // drag-vs-click detection
   private dragDistance = 0;
   private wasDragging = false;
-  private readonly clickThreshold = 6; // px of movement allowed before it counts as a drag
+  private readonly clickThreshold = 6;
 
   private readonly canvasWidth = 1400;
   private readonly canvasHeight = 900;
   private readonly friction = 0.94;
   private readonly minVelocity = 0.05;
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   ngAfterViewInit() {
-  const heroSlot = document.querySelectorAll('.hero .flex > div')[0] as HTMLElement;
-  const rect = heroSlot.getBoundingClientRect();
-  this.heroStart = {
-    top: rect.top + window.scrollY,
-    left: rect.left,
-    width: rect.width,
-    height: rect.height,
-  };
-  this.imgStyle.set({ ...this.heroStart, top: rect.top });
-  this.onScroll();
+    if (!isPlatformBrowser(this.platformId)) return;
 
-  this.heroObserver = new IntersectionObserver(
-    ([entry]) => this.heroVisible.set(entry.isIntersecting),
-    { threshold: 0.2 }
-  );
-  this.heroObserver.observe(this.heroSection.nativeElement);
+    // wait until images/fonts have actually loaded before measuring layout,
+    // otherwise the captured rect is wrong on slower production networks
+    if (document.readyState === 'complete') {
+      this.initTravelImage();
+    } else {
+      window.addEventListener('load', () => this.initTravelImage(), { once: true });
+    }
 
-  this.aboutObserver = new IntersectionObserver(
-    ([entry]) => this.aboutVisible.set(entry.isIntersecting),
-    { threshold: 0.2 }
-  );
-  this.aboutObserver.observe(this.aboutSection.nativeElement);
+    this.heroObserver = new IntersectionObserver(
+      ([entry]) => this.heroVisible.set(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    this.heroObserver.observe(this.heroSection.nativeElement);
 
-  this.worksObserver = new IntersectionObserver(
-    ([entry]) => this.worksVisible.set(entry.isIntersecting),
-    { threshold: 0.15 }
-  );
-  this.worksObserver.observe(this.worksSection.nativeElement);
+    this.aboutObserver = new IntersectionObserver(
+      ([entry]) => this.aboutVisible.set(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    this.aboutObserver.observe(this.aboutSection.nativeElement);
 
-  this.contactObserver = new IntersectionObserver(
-  ([entry]) => this.contactVisible.set(entry.isIntersecting),
-  { threshold: 0.2 }
-);
-this.contactObserver.observe(this.contactSection.nativeElement);
-}
+    this.worksObserver = new IntersectionObserver(
+      ([entry]) => this.worksVisible.set(entry.isIntersecting),
+      { threshold: 0.15 }
+    );
+    this.worksObserver.observe(this.worksSection.nativeElement);
+
+    this.contactObserver = new IntersectionObserver(
+      ([entry]) => this.contactVisible.set(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    this.contactObserver.observe(this.contactSection.nativeElement);
+  }
+
+  private initTravelImage() {
+    const heroSlot = document.querySelectorAll('.hero .flex > div')[0] as HTMLElement;
+    if (!heroSlot) return;
+
+    const measure = () => {
+      const rect = heroSlot.getBoundingClientRect();
+      this.heroStart = {
+        top: rect.top + window.scrollY,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      };
+      this.imgStyle.set({ ...this.heroStart, top: rect.top });
+      this.onScroll();
+    };
+
+    measure();
+
+    // layout can still shift after this (late-loading fonts, etc.) so
+    // recalculate on resize as a safety net
+    this.resizeHandler = () => measure();
+    window.addEventListener('resize', this.resizeHandler);
+  }
 
   ngOnDestroy() {
-  this.heroObserver?.disconnect();
-  this.aboutObserver?.disconnect();
-  this.worksObserver?.disconnect();
-  this.contactObserver?.disconnect();
-  if (this.momentumFrame) cancelAnimationFrame(this.momentumFrame);
-}
+    this.heroObserver?.disconnect();
+    this.aboutObserver?.disconnect();
+    this.worksObserver?.disconnect();
+    this.contactObserver?.disconnect();
+    if (this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
+    if (this.momentumFrame) cancelAnimationFrame(this.momentumFrame);
+  }
 
   @HostListener('window:scroll')
   onScroll() {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (!this.aboutSection || !this.aboutImageSlot || !this.heroStart) return;
 
     const aboutRect = this.aboutSection.nativeElement.getBoundingClientRect();
@@ -150,11 +174,6 @@ this.contactObserver.observe(this.contactSection.nativeElement);
     });
   }
 
-  // ---------- Pan with inertia + horizontal looping ----------
-
-  // wraps X into (-canvasWidth, 0] so it loops seamlessly — the 3 duplicated
-  // copies in the template mean whatever value we land on always has content
-  // rendered underneath it
   private wrapX(x: number): number {
     const w = this.canvasWidth;
     let wrapped = x % w;
@@ -162,7 +181,6 @@ this.contactObserver.observe(this.contactSection.nativeElement);
     return wrapped;
   }
 
-  // Y still clamps to the canvas bounds — only X loops
   private clampY(y: number) {
     const viewport = this.worksViewport.nativeElement.getBoundingClientRect();
     const minY = Math.min(0, viewport.height - this.canvasHeight);
@@ -212,25 +230,23 @@ this.contactObserver.observe(this.contactSection.nativeElement);
     };
 
     const up = (upEv: PointerEvent) => {
-  target.releasePointerCapture(upEv.pointerId);
-  this.isPanning.set(false);
-  this.wasDragging = this.dragDistance > this.clickThreshold;
-  window.removeEventListener('pointermove', move);
-  window.removeEventListener('pointerup', up);
-  this.startMomentum();
+      target.releasePointerCapture(upEv.pointerId);
+      this.isPanning.set(false);
+      this.wasDragging = this.dragDistance > this.clickThreshold;
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      this.startMomentum();
 
-  // native click doesn't bubble from children while pointer capture is
-  // active on the viewport, so resolve the clicked item manually
-  if (!this.wasDragging) {
-    const el = document.elementFromPoint(upEv.clientX, upEv.clientY);
-    const figure = el?.closest('.work-item') as HTMLElement | null;
-    if (figure) {
-      const id = Number(figure.dataset['itemId']);
-      const item = this.items.find(i => i.id === id);
-      if (item) this.selectedItem.set(item);
-    }
-  }
-};
+      if (!this.wasDragging) {
+        const el = document.elementFromPoint(upEv.clientX, upEv.clientY);
+        const figure = el?.closest('.work-item') as HTMLElement | null;
+        if (figure) {
+          const id = Number(figure.dataset['itemId']);
+          const item = this.items.find(i => i.id === id);
+          if (item) this.selectedItem.set(item);
+        }
+      }
+    };
 
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
@@ -249,7 +265,6 @@ this.contactObserver.observe(this.contactSection.nativeElement);
       const nextX = this.wrapX(this.panX() + this.velocityX * 16);
       const nextY = this.clampY(this.panY() + this.velocityY * 16);
 
-      // kill Y velocity once it hits a bound (X never hits a bound, it loops)
       if (nextY === this.panY()) this.velocityY = 0;
 
       this.panX.set(nextX);
@@ -261,9 +276,8 @@ this.contactObserver.observe(this.contactSection.nativeElement);
     this.momentumFrame = requestAnimationFrame(step);
   }
 
-  // ---------- Preview ----------
   onItemClick(item: WorkItem) {
-    if (this.wasDragging) return; // it was a pan, not a click
+    if (this.wasDragging) return;
     this.selectedItem.set(item);
   }
 
@@ -275,8 +289,9 @@ this.contactObserver.observe(this.contactSection.nativeElement);
   onEscape() {
     this.closePreview();
   }
+
   onCloseClick(event: MouseEvent) {
-  event.stopPropagation();
-  this.closePreview();
-}
+    event.stopPropagation();
+    this.closePreview();
+  }
 }
